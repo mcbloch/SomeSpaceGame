@@ -1,0 +1,207 @@
+[gd_scene load_steps=14 format=2]
+
+[ext_resource path="res://KinematicBody2D.gd" type="Script" id=1]
+[ext_resource path="res://assets/64195.png" type="Texture" id=2]
+[ext_resource path="res://assets/sound/explosion.wav" type="AudioStream" id=3]
+[ext_resource path="res://assets/sound/laser.wav" type="AudioStream" id=4]
+[ext_resource path="res://Area2D.gd" type="Script" id=5]
+[ext_resource path="res://GameOver.gd" type="Script" id=6]
+
+[sub_resource type="Shader" id=4]
+code = "shader_type canvas_item;
+
+//Get texture and a key that we want as transparent
+uniform sampler2D Diffuse;
+uniform vec4 ChromaKey : hint_color;
+
+void fragment(){
+    //The color value is the sampled pixel color
+    COLOR = texture(Diffuse, UV);
+
+    //If the color is the same as the chroma key, make it transparent.
+    if (COLOR == ChromaKey)
+    {
+        COLOR.a = 0.0;
+    }
+}"
+
+[sub_resource type="ShaderMaterial" id=5]
+shader = SubResource( 4 )
+shader_param/ChromaKey = Color( 1, 0, 1, 1 )
+shader_param/Diffuse = ExtResource( 2 )
+
+[sub_resource type="Animation" id=10]
+resource_name = "explode"
+length = 0.4
+tracks/0/type = "value"
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.1, 0.2, 0.3, 0.4 ),
+"transitions": PoolRealArray( 1, 1, 1, 1, 1 ),
+"update": 1,
+"values": [ 10, 11, 12, 13, 14 ]
+}
+
+[sub_resource type="Animation" id=8]
+resource_name = "move_down"
+length = 0.2
+tracks/0/type = "value"
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.1, 0.2 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
+"update": 1,
+"values": [ 5, 6, 7 ]
+}
+
+[sub_resource type="Animation" id=7]
+resource_name = "move_up"
+length = 0.2
+tracks/0/type = "value"
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.1, 0.2 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
+"update": 1,
+"values": [ 5, 8, 9 ]
+}
+
+[sub_resource type="RectangleShape2D" id=9]
+extents = Vector2( 10, 105 )
+
+[sub_resource type="RectangleShape2D" id=11]
+extents = Vector2( 330, 10 )
+
+[node name="Main" type="Node2D"]
+
+[node name="KinematicBody2D" type="KinematicBody2D" parent="."]
+position = Vector2( 239, 113 )
+collision_layer = 5
+collision_mask = 5
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_group_": true
+}
+
+[node name="Sprite" type="Sprite" parent="KinematicBody2D"]
+material = SubResource( 5 )
+position = Vector2( 1, -13 )
+texture = ExtResource( 2 )
+vframes = 3
+hframes = 5
+frame = 5
+
+[node name="collision" type="CollisionPolygon2D" parent="KinematicBody2D"]
+visible = false
+rotation = 1.5708
+polygon = PoolVector2Array( -13, 14, -2, 3, -2, -2, 2, -7, 2, -9, 5, -12, 5, -20, 5.99999, -24, 6.99999, -25, 8.99999, -25, 9.99999, -24, 10, -19, 12, -17, 12, -9, 18, 10, 18, 17, 17, 22, 16, 23, 15, 23, 13, 20, 12, 20, 11, 23, 6, 23, 6, 20, -1, 23, -4, 23, -4, 20, -1, 17, -6, 17, -6, 18, -11, 20, -12, 20, -13, 19 )
+
+[node name="collisionDown" type="CollisionPolygon2D" parent="KinematicBody2D"]
+visible = false
+polygon = PoolVector2Array( -13, -17, -3, -11, -2, -11, 1, -13, 5, -15, 15, -15, 15, -12, 13, -5, 21, -4, 26, -3, 27, -2, 27, 1, 26, 2, 19, 4, 11, 5, 7, 6, -4, 14, -6, 15, -12, 16, -13, 16, -19, 15, -19, 13, -18, 11, -15, 6, -21, 3, -21, -2, -19, -2, -19, -3, -20, -3, -24, -7, -24, -9, -20, -9, -17, -8, -21, -15, -21, -17 )
+disabled = true
+
+[node name="collisionUp" type="CollisionPolygon2D" parent="KinematicBody2D"]
+visible = false
+polygon = PoolVector2Array( -9, -10, -1, -2, 2, -2, 4, -1, 5, 0, 7, 1, 10, 2, 11, 3, 13, 5, 22, 5, 24, 6, 25, 7, 25, 10, 24, 11, 17, 12, 9, 12, 12, 15, 12, 17, 1, 17, -8, 14, -8, 13, -18, 13, -23, 11, -23, 6, -20, 6, -20, 5, -21, 5, -23, 2, -23, 0, -23, -4, -15, -4, -17, -8, -17, -10 )
+disabled = true
+
+[node name="FireDelay" type="Timer" parent="KinematicBody2D"]
+one_shot = true
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="KinematicBody2D"]
+anims/explode = SubResource( 10 )
+anims/move_down = SubResource( 8 )
+anims/move_up = SubResource( 7 )
+
+[node name="ExplosionSound" type="AudioStreamPlayer" parent="KinematicBody2D"]
+stream = ExtResource( 3 )
+
+[node name="ShootSound" type="AudioStreamPlayer2D" parent="KinematicBody2D"]
+stream = ExtResource( 4 )
+
+[node name="RockSpawn" type="Area2D" parent="."]
+position = Vector2( 575, 113 )
+script = ExtResource( 5 )
+__meta__ = {
+"_edit_group_": true
+}
+player_path = NodePath("../KinematicBody2D")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="RockSpawn"]
+shape = SubResource( 9 )
+
+[node name="WallTop" type="StaticBody2D" parent="."]
+editor/display_folded = true
+position = Vector2( 289, 0 )
+collision_layer = 4
+collision_mask = 4
+__meta__ = {
+"_edit_group_": true
+}
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WallTop"]
+shape = SubResource( 11 )
+
+[node name="WallBottom" type="StaticBody2D" parent="."]
+editor/display_folded = true
+position = Vector2( 278, 250 )
+collision_layer = 4
+collision_mask = 4
+__meta__ = {
+"_edit_group_": true
+}
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WallBottom"]
+shape = SubResource( 11 )
+
+[node name="WallRight" type="StaticBody2D" parent="."]
+editor/display_folded = true
+position = Vector2( 608, 237 )
+rotation = 1.5708
+collision_layer = 4
+collision_mask = 4
+__meta__ = {
+"_edit_group_": true
+}
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WallRight"]
+shape = SubResource( 11 )
+
+[node name="WallLeft" type="StaticBody2D" parent="."]
+editor/display_folded = true
+position = Vector2( 0, 216 )
+rotation = 1.5708
+collision_layer = 4
+collision_mask = 4
+__meta__ = {
+"_edit_group_": true
+}
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WallLeft"]
+shape = SubResource( 11 )
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="GameOver" type="Label" parent="CanvasLayer"]
+visible = false
+margin_left = 272.0
+margin_top = 113.0
+margin_right = 345.0
+margin_bottom = 127.0
+text = "Game Over"
+script = ExtResource( 6 )
+player_path = NodePath("../../KinematicBody2D")
+[connection signal="animation_finished" from="KinematicBody2D/AnimationPlayer" to="KinematicBody2D" method="_on_AnimationPlayer_animation_finished"]
